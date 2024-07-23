@@ -1,0 +1,61 @@
+# Ignore dotnet projects
+*.csproj
+*.sln
+*.dll
+*.exe
+*.pdb
+*.userprefs
+*.vscode
+*.vs
+obj
+bin
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore Rider project files
+.idea/
+*.sln.iml
+
+# Ignore NuGet packages
+*.nupkg
+packages/
+
+# Ignore logs
+*.log
+
+# Ignore build results
+build/
+out/
+
+# Ignore publish output
+publish/
+
+# Ignore npm packages
+node_modules/
+
+# Ignore coverage files
+coverage/
+*.coverage
+*.coveragexml
+*.cov
+*.gcov
+*.lcov
+*.clover
+
+# Ignore database files
+*.mdf
+*.ldf
+*.ndf
+
+# Ignore Visual Studio Code workspace settings
+.vscode/
+
+# Ignore local history
+.localhistory/
+
+# Ignore temporary files
+*.tmp
+*.temp
