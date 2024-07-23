@@ -1,0 +1,11 @@
+# Ignore dotnet projects
+*.csproj
+*.sln
+*.dll
+*.exe
+*.pdb
+*.userprefs
+*.vscode
+*.vs
+obj
+bin
