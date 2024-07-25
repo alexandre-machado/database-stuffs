@@ -1,0 +1,31 @@
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+
+namespace dotnet_guidv7
+{
+    public static class Sql
+    {
+        private static readonly string connectionString
+            = "Server=sql-server.stg.consolidacao.warren.com.br;Database=SampleDB;User Id=mp_admin_sa;Password=meu1portfolio5631!;TrustServerCertificate=true;";
+
+        public static void Query(string sql, object? param = default)
+        {
+            using var connection = GetConnection();
+            connection.Execute(sql, param);
+        }
+
+        public static IEnumerable<T> Query<T>(string sql, object? param = default)
+        {
+            using var connection = GetConnection();
+            return connection.Query<T>(sql, param);
+        }
+
+        private static SqlConnection GetConnection()
+        {
+            var connection = new SqlConnection(connectionString);
+            connection.Open();
+            // Console.WriteLine("Connected to SQL Server");
+            return connection;
+        }
+    }
+}
