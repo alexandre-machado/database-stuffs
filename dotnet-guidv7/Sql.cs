@@ -28,4 +28,10 @@ namespace dotnet_guidv7
             return connection;
         }
     }
+    public class FragResult
+    {
+        public decimal avg_fragmentation_in_percent { get; set; }
+        public string table_name { get; set; }
+        public string index_name { get; set; }
+    }
 }
