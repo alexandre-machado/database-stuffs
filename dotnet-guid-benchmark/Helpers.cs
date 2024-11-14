@@ -1,12 +1,12 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace dotnet_guidv7
+namespace dotnet_guid_benchmark
 {
     public static class Sql
     {
         private static readonly string connectionString
-            = "Server=localhost;Database=SampleDB;User Id=sa;Password=123456;TrustServerCertificate=true;";
+            = "Server=localhost;Database=SampleDB;User Id=sa;Password=123456!@#Qq;TrustServerCertificate=true;";
 
         public static void Query(string sql, object? param = default)
         {
@@ -28,10 +28,11 @@ namespace dotnet_guidv7
             return connection;
         }
     }
+
     public class FragResult
     {
-        public decimal avg_fragmentation_in_percent { get; set; }
-        public string table_name { get; set; }
-        public string index_name { get; set; }
+        public decimal AvgFragmentationInPercent { get; set; }
+        public string TableName { get; set; }
+        public string IndexName { get; set; }
     }
 }

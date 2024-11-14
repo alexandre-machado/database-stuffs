@@ -1,22 +1,23 @@
 ﻿using System.Diagnostics;
-using UUIDNext;
 
-namespace dotnet_guidv7
+namespace dotnet_guid_benchmark
 {
-    public class UUIDNextSample
+    public class Generator
     {
         private int counter;
 
-        public UUIDNextSample()
+        public Generator()
         {
-            Task.WaitAll(
-                Task.Run(() => { MakeData($"UUIDs_UUIDNext_{Database.SqlServer}"); }),
-                Task.Run(() => { MakeData($"UUIDs_UUIDNext_{Database.SQLite}"); })
-            );
 
-            foreach (var item in Sql.Query<FragResult>(@"
-                SELECT DDIPS.avg_fragmentation_in_percent, T.name as table_name, I.name as index_name
-                FROM sys.dm_db_index_physical_stats(DB_ID(N'SampleDB'), NULL, NULL, NULL, NULL) AS DDIPS
+        }
+
+        private static void ListFragment(string tableName)
+        {
+            foreach (var item in Sql.Query<FragResult>(@$"
+                SELECT (DDIPS.avg_fragmentation_in_percent / 100.00) as AvgFragmentationInPercent
+                    , T.name as TableName
+                    , I.name as IndexName
+                FROM sys.dm_db_index_physical_stats(DB_ID(N'SampleDB'), OBJECT_ID(N'{tableName}'), NULL, NULL, NULL) AS DDIPS
 	                INNER JOIN sys.tables T on T.object_id = DDIPS.object_id
 	                INNER JOIN sys.schemas S on T.schema_id = S.schema_id
 	                INNER JOIN sys.indexes I ON I.object_id = DDIPS.object_id
@@ -24,37 +25,45 @@ namespace dotnet_guidv7
                 ORDER BY DDIPS.avg_fragmentation_in_percent DESC;")
             )
                 Console.WriteLine(
-                    $"avg_fragmentation_in_percent: {item.avg_fragmentation_in_percent}" +
-                    $", table: {item.table}" +
-                    $", index: {item.index}"
+                    $"table: {item.TableName}" +
+                    $", avg_fragmentation_in_percent: {item.AvgFragmentationInPercent:P}" +
+                    $", index: {item.IndexName}"
                 );
-
         }
 
-        private void MakeData(string tableName)
+        public void MakeData(string sufix, Func<Guid> sequentialMaker)
         {
+            var tableName = $"{this.GetType().Name}_{sufix}";
+
+            Console.WriteLine($"droping table: {tableName}");
             Sql.Query($@"if not exists (select * from sysobjects where name='{tableName}' and xtype='U')
                 CREATE TABLE {tableName} (Id UNIQUEIDENTIFIER PRIMARY KEY, Ordered INT IDENTITY(1,1))");
+
+            Console.WriteLine($"delete table: {tableName}");
             Sql.Query($"delete from {tableName}");
             EnableStatics(tableName);
 
             var size = 5_000;
-            //Enumerable.Range(0, size).AsParallel().ForAll(i =>
+
+            Console.WriteLine($"insert into table: {tableName}");
             Enumerable.Range(0, size).ToList().ForEach(i =>
             {
-                var sequentialUuid = Uuid.NewDatabaseFriendly(Database.SQLite);
+                var sequentialUuid = sequentialMaker();
 
                 Sql.Query<int>($"Insert into {tableName} (Id) values (@guid)", new { guid = sequentialUuid });
                 Interlocked.Increment(ref counter);
             });
 
+            Console.WriteLine($"select top 10 Id from table: {tableName}");
             foreach (var item in Sql.Query<Guid>($"select top 10 Id from {tableName}"))
                 Console.WriteLine(item);
+
+            ListFragment(tableName);
         }
 
         private void EnableStatics(string tableName)
         {
-            // run code async every 5 seconds
+            // run code async every x seconds
             var timer = new Timer(async _ =>
             {
                 // show all parallelquery threads
@@ -66,8 +75,8 @@ namespace dotnet_guidv7
                     $", worker threads: {Process.GetCurrentProcess().Threads.Count}"
                 );
 
-                await Task.Delay(5000);
-            }, null, 0, 5000);
+                await Task.Delay(0);
+            }, null, 0, 1000);
         }
     }
 }
