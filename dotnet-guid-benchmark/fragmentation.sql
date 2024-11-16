@@ -8,5 +8,11 @@ INNER JOIN sys.indexes AS i ON ips.object_id = i.object_id
     AND ips.index_id = i.index_id
 INNER JOIN sys.partitions AS ps ON ips.object_id = ps.object_id
     AND ips.index_id = ps.index_id
-WHERE OBJECT_NAME(ps.object_id) = 'Inventory'
+-- WHERE OBJECT_NAME(ps.object_id) = 'Inventory'
 ORDER BY ips.avg_fragmentation_in_percent DESC
+
+
+select * from [dbo].[DotnetNativeGen_DotnetV7_OffSet] order by 2
+ALTER INDEX ALL ON [dbo].[DotnetNativeGen_DotnetV7] REORGANIZE;
+ALTER INDEX ALL ON [dbo].[DotnetNativeGen_DotnetV4] REORGANIZE;
+ALTER INDEX ALL ON [dbo].[DotnetNativeGen_DotnetV7_OffSet] REORGANIZE;

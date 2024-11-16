@@ -11,9 +11,9 @@ namespace dotnet_guid_benchmark
 
         }
 
-        private static void ListFragment(string tableName)
+        private async void ListFragment(string tableName)
         {
-            foreach (var item in Sql.Query<FragResult>(@$"
+            foreach (var item in await Sql.QueryAsync<FragResult>(@$"
                 SELECT (DDIPS.avg_fragmentation_in_percent / 100.00) as AvgFragmentationInPercent
                     , T.name as TableName
                     , I.name as IndexName
@@ -31,32 +31,32 @@ namespace dotnet_guid_benchmark
                 );
         }
 
-        public void MakeData(string sufix, Func<Guid> sequentialMaker)
+        public async Task MakeData(string sufix, Func<Guid> sequentialMaker)
         {
             var tableName = $"{this.GetType().Name}_{sufix}";
 
             Console.WriteLine($"droping table: {tableName}");
-            Sql.Query($@"if not exists (select * from sysobjects where name='{tableName}' and xtype='U')
+            await Sql.QueryAsync($@"if not exists (select * from sysobjects where name='{tableName}' and xtype='U')
                 CREATE TABLE {tableName} (Id UNIQUEIDENTIFIER PRIMARY KEY, Ordered INT IDENTITY(1,1))");
 
             Console.WriteLine($"delete table: {tableName}");
-            Sql.Query($"delete from {tableName}");
+            await Sql.QueryAsync($"delete from {tableName}");
             EnableStatics(tableName);
 
             var size = 5_000;
 
             Console.WriteLine($"insert into table: {tableName}");
-            Enumerable.Range(0, size).ToList().ForEach(i =>
+            Enumerable.Range(0, size).ToList().ForEach(async i =>
             {
                 var sequentialUuid = sequentialMaker();
 
-                Sql.Query<int>($"Insert into {tableName} (Id) values (@guid)", new { guid = sequentialUuid });
+                await Sql.QueryAsync<int>($"Insert into {tableName} (Id) values (@guid)", new { guid = sequentialUuid });
                 Interlocked.Increment(ref counter);
             });
 
-            Console.WriteLine($"select top 10 Id from table: {tableName}");
-            foreach (var item in Sql.Query<Guid>($"select top 10 Id from {tableName}"))
-                Console.WriteLine(item);
+            //Console.WriteLine($"select top 10 Id from table: {tableName}");
+            //foreach (var item in await Sql.QueryAsync<Guid>($"select top 10 Id from {tableName}"))
+            //    Console.WriteLine(item);
 
             ListFragment(tableName);
         }
@@ -67,7 +67,7 @@ namespace dotnet_guid_benchmark
             var timer = new Timer(async _ =>
             {
                 // show all parallelquery threads
-                var count = Sql.Query<int>($"select count(*) from {tableName}").FirstOrDefault();
+                var count = (await Sql.QueryAsync<int>($"select count(*) from {tableName}")).FirstOrDefault();
 
                 Console.WriteLine(
                     $"[{tableName}] -> bd count: {count}" +
@@ -76,7 +76,7 @@ namespace dotnet_guid_benchmark
                 );
 
                 await Task.Delay(0);
-            }, null, 0, 1000);
+            }, null, 1000, 1000);
         }
     }
 }

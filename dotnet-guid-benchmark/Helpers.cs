@@ -8,22 +8,28 @@ namespace dotnet_guid_benchmark
         private static readonly string connectionString
             = "Server=localhost;Database=SampleDB;User Id=sa;Password=123456!@#Qq;TrustServerCertificate=true;";
 
-        public static void Query(string sql, object? param = default)
+        public static async void Task<Query>(string sql, object? param = default)
         {
-            using var connection = GetConnection();
-            connection.Execute(sql, param);
+            using var connection = await GetConnection();
+            await connection.ExecuteAsync(sql, param);
         }
 
-        public static IEnumerable<T> Query<T>(string sql, object? param = default)
+        public static async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = default)
         {
-            using var connection = GetConnection();
-            return connection.Query<T>(sql, param);
+            using var connection = await GetConnection();
+            return await connection.QueryAsync<T>(sql, param);
         }
 
-        private static SqlConnection GetConnection()
+        public static async Task QueryAsync(string sql, object? param = default)
+        {
+            using var connection = await GetConnection();
+            await connection.QueryAsync(sql, param);
+        }
+
+        private static async Task<SqlConnection> GetConnection()
         {
             var connection = new SqlConnection(connectionString);
-            connection.Open();
+            await connection.OpenAsync();
             // Console.WriteLine("Connected to SQL Server");
             return connection;
         }

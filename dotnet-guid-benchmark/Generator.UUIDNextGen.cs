@@ -7,8 +7,8 @@ namespace dotnet_guid_benchmark
         public UUIDNextGen() : base()
         {
             Task.WaitAll(
-                Task.Run(() => { MakeData($"{Database.SqlServer}", () => Uuid.NewDatabaseFriendly(Database.SqlServer)); }),
-                Task.Run(() => { MakeData($"{Database.SQLite}", () => Uuid.NewDatabaseFriendly(Database.SQLite)); })
+                Task.Run(async () => { await MakeData($"{Database.SqlServer}", () => Uuid.NewDatabaseFriendly(Database.SqlServer)); }),
+                Task.Run(async () => { await MakeData($"{Database.SQLite}", () => Uuid.NewDatabaseFriendly(Database.SQLite)); })
             );
         }
     }
